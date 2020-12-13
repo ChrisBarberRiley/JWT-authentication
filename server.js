@@ -29,11 +29,16 @@ app.post('/login', (req, res) => {
     name: 'Chris',
   };
 
-  jwt.sign({ user }, process.env.JWT_SECRET, (err, token) => {
-    res.json({
-      token,
-    });
-  });
+  jwt.sign(
+    { user },
+    process.env.JWT_SECRET,
+    { expiresIn: '30s' },
+    (err, token) => {
+      res.json({
+        token,
+      });
+    }
+  );
 });
 
 // verify token
