@@ -10,9 +10,16 @@ app.use(express.json());
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-app.post('/user', (req, res) => {
-  res.json({
-    message: process.env.JWT_SECRET,
+app.post('/user', verifyToken, (req, res) => {
+  jwt.verify(req.token, process.env.JWT_SECRET, (err, authData) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      res.json({
+        message: 'Created a user',
+        authData,
+      });
+    }
   });
 });
 
@@ -28,5 +35,21 @@ app.post('/login', (req, res) => {
     });
   });
 });
+
+// verify token
+function verifyToken(req, res, next) {
+  // Get bearer
+  const bearerHeader = req.headers['authorization'];
+
+  if (typeof bearerHeader !== 'undefined') {
+    const bearer = bearerHeader.split(' ');
+    const bearerToken = bearer[1];
+
+    req.token = bearerToken;
+    next();
+  } else {
+    res.sendStatus(403);
+  }
+}
 
 app.listen(PORT, () => console.log(`Listening ${PORT} PORT!`));
